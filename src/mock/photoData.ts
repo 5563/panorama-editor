@@ -10,7 +10,10 @@ export const photoData = [
           yaw: 0.3308607335380369,
           pitch: -0.276145833534057,
         },
-        html: '<div class="hotspot">Marker 1</div>',
+        html: `<div class="hotspot-with-arrow">
+  <div class="hotspot-text">景点名称</div>
+  <div class="arrow-down"></div>
+</div>`,
         size: { width: 32, height: 32 },
       },
       {
@@ -19,7 +22,10 @@ export const photoData = [
           yaw: 1.360266574458258,
           pitch: -0.5846813973963054,
         },
-        html: '<div class="hotspot">Marker 2</div>',
+        html: `<div class="hotspot-arrow-v2">
+  <div class="hotspot-label">重要地点</div>
+  <div class="arrow-icon"></div>
+</div>`,
         size: { width: 32, height: 32 },
       },
     ],

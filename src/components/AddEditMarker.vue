@@ -78,8 +78,8 @@ interface MarkerData {
   description: string
 }
 
-const isOpen = ref(true)
-const isEditMode = ref(true)
+const isOpen = ref(false)
+const isEditMode = ref(false)
 const formData = reactive<MarkerData>({
   id: '',
   yaw: 0,
@@ -91,9 +91,12 @@ const formData = reactive<MarkerData>({
 })
 
 // 暴露给父组件的方法
-const openAddMarker = () => {
+const openAddMarker = (yaw: number, pitch: number) => {
   isEditMode.value = false
   resetForm()
+  // 设置点击位置的yaw和pitch
+  formData.yaw = yaw
+  formData.pitch = pitch
   isOpen.value = true
 }
 
@@ -123,9 +126,23 @@ const resetForm = () => {
   formData.description = ''
 }
 
+const emit = defineEmits(['addMarker', 'updateMarker'])
+
 const saveMarker = () => {
-  // 这里处理保存逻辑
-  console.log('保存点位:', formData)
+  // 验证表单
+  if (!formData.id.trim()) {
+    alert('请输入点位ID')
+    return
+  }
+  
+  if (isEditMode.value) {
+    // 编辑模式,触发更新事件
+    emit('updateMarker', { ...formData })
+  } else {
+    // 新增模式,触发新增事件
+    emit('addMarker', { ...formData })
+  }
+  
   closeDrawer()
 }
 

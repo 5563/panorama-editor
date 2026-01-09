@@ -9,7 +9,7 @@ export type PanoramaClickEvent = {
 export class PhotoSphere {
   viewer: Viewer;
   markersPlugin: MarkersPlugin;
-  constructor(container: HTMLElement, panorama: string) {
+  constructor(container: HTMLElement, panorama?: string) {
     this.viewer = new Viewer({
       container,
       panorama,
