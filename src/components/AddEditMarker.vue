@@ -42,16 +42,6 @@
           </div>
 
           <div class="form-group">
-            <label>宽度 (px)</label>
-            <input v-model.number="formData.width" type="number" placeholder="32" />
-          </div>
-
-          <div class="form-group">
-            <label>高度 (px)</label>
-            <input v-model.number="formData.height" type="number" placeholder="32" />
-          </div>
-
-          <div class="form-group">
             <label>描述信息</label>
             <textarea v-model="formData.description" placeholder="请输入描述信息"></textarea>
           </div>
@@ -73,20 +63,16 @@ interface MarkerData {
   yaw: number
   pitch: number
   label: string
-  width: number
-  height: number
   description: string
 }
 
-const isOpen = ref(false)
+const isOpen = ref(true)
 const isEditMode = ref(false)
 const formData = reactive<MarkerData>({
   id: '',
   yaw: 0,
   pitch: 0,
   label: '',
-  width: 32,
-  height: 32,
   description: '',
 })
 
@@ -106,8 +92,6 @@ const openEditMarker = (marker: any) => {
   formData.yaw = marker.position.yaw
   formData.pitch = marker.position.pitch
   formData.label = marker.label || ''
-  formData.width = marker.size?.width || 32
-  formData.height = marker.size?.height || 32
   formData.description = marker.description || ''
   isOpen.value = true
 }
@@ -121,8 +105,6 @@ const resetForm = () => {
   formData.yaw = 0
   formData.pitch = 0
   formData.label = ''
-  formData.width = 32
-  formData.height = 32
   formData.description = ''
 }
 

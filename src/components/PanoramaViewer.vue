@@ -86,13 +86,9 @@ function addMarkerToData(markerData: any) {
       pitch: markerData.pitch,
     },
     html: `<div class="hotspot-with-arrow">
-  <div class="hotspot-text">景点名称</div>
-  <div class="arrow-down"></div>
-</div>`,
-    // size: {
-    //   width: 120,  // 匹配容器宽度,包含所有元素
-    //   height: 80   // 匹配容器高度,包含文字+箭头+波纹
-    // },
+      <div class="hotspot-text">景点名称</div>
+      <div class="arrow-down"></div>
+    </div>`,
     description: markerData.description,
   };
 
