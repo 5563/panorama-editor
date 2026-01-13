@@ -22,7 +22,7 @@
             <label>Yaw角度</label>
             <div class="input-with-slider">
               <input v-model.number="formData.yaw" type="number" placeholder="0 ~ 2π" />
-              <input v-model.number="formData.yaw" type="range" min="0" max="6.28" step="0.01" />
+              <input v-model.number="formData.yaw" type="range" min="0" max="6.28" step="0.001" />
               <span class="value">{{ formData.yaw.toFixed(2) }}</span>
             </div>
           </div>
@@ -31,9 +31,20 @@
             <label>Pitch角度</label>
             <div class="input-with-slider">
               <input v-model.number="formData.pitch" type="number" placeholder="-π/2 ~ π/2" />
-              <input v-model.number="formData.pitch" type="range" min="-1.57" max="1.57" step="0.01" />
+              <input v-model.number="formData.pitch" type="range" min="-1.57" max="1.57" step="0.001" />
               <span class="value">{{ formData.pitch.toFixed(2) }}</span>
             </div>
+          </div>
+          <div class="form-group">
+            <label>样式</label>
+             <el-select v-model="formData.style" placeholder="请选择样式" style="width: 240px">
+                <el-option
+                  v-for="item in styleEnum()"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
           </div>
 
           <div class="form-group">
@@ -57,6 +68,8 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
+import { styleEnum } from '@/photoSphereClass/dict'
+import { ElSelect, ElOption } from 'element-plus'
 
 interface MarkerData {
   id: string
@@ -64,6 +77,7 @@ interface MarkerData {
   pitch: number
   label: string
   description: string
+  style: string
 }
 
 const isOpen = ref(true)
@@ -74,6 +88,7 @@ const formData = reactive<MarkerData>({
   pitch: 0,
   label: '',
   description: '',
+  style: '',
 })
 
 // 暴露给父组件的方法

@@ -51,6 +51,14 @@ const getPhotoData = async () => {
 const viewerRef = ref<HTMLDivElement | null>(null);
 let photoViewer: PhotoSphere | null = null;
 let markersPlugin: MarkersPlugin | null = null;
+const tempMarker = {
+  id: "tempMarkerID",
+  position: {
+    yaw: 0,
+    pitch: 0,
+  },
+  html: '<div class="hotspot"></div>',
+};
 onMounted(async () => {
   await getPhotoData();
 
@@ -65,6 +73,17 @@ onMounted(async () => {
     console.log("全景图点击事件:", e);
     if (isEditMode.value) {
       // 打开新增点位弹窗
+        const markers = photoViewer?.markersPlugin?.getMarkers() || [];
+
+      const exists = markers.some(m => m.id === tempMarker.id);
+
+      if (exists) {
+        photoViewer?.markersPlugin.removeMarker(tempMarker.id);
+      }
+
+      tempMarker.position.yaw = e.yaw;
+      tempMarker.position.pitch = e.pitch;
+      photoViewer?.markersPlugin.addMarker(tempMarker);
       addEditMarkerRef.value?.openAddMarker(e.yaw, e.pitch);
     }
   });
