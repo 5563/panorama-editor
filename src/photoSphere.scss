@@ -10,15 +10,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
+  gap: 12px;
   cursor: pointer;
   position: relative;
-  /* 固定容器尺寸,包含所有元素 */
-  width: 120px; // 足够容纳文字宽度
-  height: 80px; // 包含文字+箭头+波纹的总高度
-  padding-bottom: 20px; // 为波纹留出空间
-  
+  transform: translateY( -50%);
   .hotspot-text {
     font-size: 14px;
     font-weight: 600;
@@ -37,40 +32,38 @@
     height: 0;
     border-left: 14px solid transparent;
     border-right: 14px solid transparent;
-    border-top: 20px solid #667eea;
-    animation: arrowBounce 2s ease-in-out infinite;
+    border-top: 10px solid #667eea;
+    animation: arrowBounce 2s ease-in infinite;
     transform-origin: center top;
     position: relative;
     filter: drop-shadow(0 2px 6px rgba(102, 126, 234, 0.4));
-    
-    /* 波纹效果 */
-    &::before,
-    &::after {
-      content: '';
-      position: absolute;
-      left: 50%;
-      top: 20px;
-      width: 45px;
-      height: 14px;
-      border: 3px solid #667eea;
-      border-radius: 50%;
-      transform: translate(-50%, -50%) scale(0) rotateX(75deg);
-      transform-style: preserve-3d;
-      opacity: 0;
-      box-shadow: 0 0 8px rgba(102, 126, 234, 0.6);
-    }
-    
-    &::before {
-      animation: ripple 2s ease-in-out infinite;
-    }
-    
-    &::after {
-      animation: ripple 2s ease-in-out infinite 0.3s;
-      border-color: #764ba2;
-      box-shadow: 0 0 8px rgba(118, 75, 162, 0.6);
-    }
+  }
+  /* 波纹效果 */
+  &::before, &::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: calc(50%);
+    margin: auto;
+    height: 14px;
+    width: 30px;
+    border: 3px solid #667eea;
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0) rotateX(75deg);
+    transform-style: preserve-3d;
+    opacity: 0;
+    box-shadow: 0 0 8px rgba(102, 126, 234, 0.6);
   }
   
+  &::before {
+    animation: ripple 2s ease-in-out infinite;
+  }
+  
+  &::after {
+    animation: ripple 2s ease-in-out infinite 0.3s;
+    border-color: #764ba2;
+    box-shadow: 0 0 8px rgba(118, 75, 162, 0.6);
+  }
   &:hover .hotspot-text {
     background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
     transform: translateY(-3px) scale(1.05);
@@ -94,27 +87,17 @@
 /* 箭头动画: 向下移动并旋转,然后回到上面 */
 @keyframes arrowBounce {
   0% {
-    transform: translateY(0) rotate(0deg);
+    transform: translateY(0) rotateY(0deg);
     opacity: 1;
   }
   
-  25% {
-    transform: translateY(8px) rotate(5deg);
-    opacity: 0.9;
-  }
-  
   50% {
-    transform: translateY(12px) rotate(0deg);
+    transform: translateY(-8px) rotateY(180deg);
     opacity: 0.8;
   }
   
-  75% {
-    transform: translateY(8px) rotate(-5deg);
-    opacity: 0.9;
-  }
-  
   100% {
-    transform: translateY(0) rotate(0deg);
+    transform: translateY(0) rotateY(0deg);
     opacity: 1;
   }
 }
@@ -144,183 +127,5 @@
   100% {
     transform: translate(-50%, -50%) scale(3) rotateX(75deg);
     opacity: 0;
-  }
-}
-
-/* 另一种箭头样式 - 使用伪元素创建更精致的箭头 */
-.hotspot-arrow-v2 {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  
-  .hotspot-label {
-    font-size: 14px;
-    font-weight: 600;
-    color: #fff;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 8px 16px;
-    border-radius: 24px;
-    white-space: nowrap;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-    transition: all 0.3s ease;
-  }
-  
-  .arrow-icon {
-    position: relative;
-    width: 24px;
-    height: 24px;
-    animation: arrowFloat 2.5s ease-in-out infinite;
-    
-    &::before,
-    &::after {
-      content: '';
-      position: absolute;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      transition: all 0.3s ease;
-    }
-    
-    /* 箭头主干 */
-    &::before {
-      width: 3px;
-      height: 100%;
-      left: 50%;
-      top: 0;
-      transform: translateX(-50%);
-      border-radius: 2px;
-    }
-    
-    /* 箭头尖端 */
-    &::after {
-      width: 12px;
-      height: 12px;
-      left: 50%;
-      bottom: 0;
-      transform: translateX(-50%) rotate(45deg);
-      border-radius: 0 0 3px 0;
-      clip-path: polygon(0 0, 100% 100%, 0 100%);
-    }
-  }
-  
-  &:hover .hotspot-label {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-  }
-  
-  &:hover .arrow-icon {
-    animation-duration: 1.5s;
-  }
-}
-
-/* 箭头浮动动画 */
-@keyframes arrowFloat {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
-    opacity: 1;
-  }
-  
-  15% {
-    transform: translateY(4px) rotate(3deg);
-  }
-  
-  30% {
-    transform: translateY(10px) rotate(0deg);
-    opacity: 0.85;
-  }
-  
-  45% {
-    transform: translateY(14px) rotate(-3deg);
-    opacity: 0.7;
-  }
-  
-  60% {
-    transform: translateY(10px) rotate(0deg);
-    opacity: 0.85;
-  }
-  
-  75% {
-    transform: translateY(4px) rotate(3deg);
-  }
-}
-
-/* SVG 箭头样式 - 更流畅的动画效果 */
-.hotspot-svg-arrow {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  
-  .label-text {
-    font-size: 15px;
-    font-weight: 700;
-    color: #fff;
-    background: rgba(255, 69, 58, 0.9);
-    padding: 10px 20px;
-    border-radius: 30px;
-    white-space: nowrap;
-    box-shadow: 0 4px 20px rgba(255, 69, 58, 0.4);
-    letter-spacing: 0.5px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .svg-arrow {
-    width: 30px;
-    height: 30px;
-    animation: arrowBounceRotate 2s ease-in-out infinite;
-    filter: drop-shadow(0 2px 4px rgba(255, 69, 58, 0.3));
-    
-    path {
-      fill: rgba(255, 69, 58, 0.9);
-      transition: all 0.3s ease;
-    }
-  }
-  
-  &:hover .label-text {
-    background: rgba(255, 69, 58, 1);
-    transform: translateY(-4px) scale(1.08);
-    box-shadow: 0 6px 25px rgba(255, 69, 58, 0.6);
-  }
-  
-  &:hover .svg-arrow {
-    animation-duration: 1.2s;
-    
-    path {
-      fill: rgba(255, 69, 58, 1);
-    }
-  }
-}
-
-/* 箭头弹跳旋转动画 */
-@keyframes arrowBounceRotate {
-  0% {
-    transform: translateY(0) rotate(0deg) scale(1);
-    opacity: 1;
-  }
-  
-  20% {
-    transform: translateY(6px) rotate(8deg) scale(0.95);
-    opacity: 0.9;
-  }
-  
-  40% {
-    transform: translateY(15px) rotate(0deg) scale(0.9);
-    opacity: 0.75;
-  }
-  
-  60% {
-    transform: translateY(10px) rotate(-8deg) scale(0.95);
-    opacity: 0.85;
-  }
-  
-  80% {
-    transform: translateY(3px) rotate(0deg) scale(0.98);
-    opacity: 0.95;
-  }
-  
-  100% {
-    transform: translateY(0) rotate(0deg) scale(1);
-    opacity: 1;
   }
 }

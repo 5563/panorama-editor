@@ -10,5 +10,7 @@ export default defineConfig({
     alias : {
       "@" : fileURLToPath(new URL("./src", import.meta.url)),
     },
+    // 解决 Three.js 多实例警告
+    dedupe: ['three']
   },
 })

@@ -4,117 +4,141 @@
       <div class="export-json">导出json</div>
       <div ref="viewerRef" class="photoViewer"></div>
     </div>
-    <AddEditMarker ref="addEditMarkerRef" @add-marker="addMarkerToData" @update-marker="updateMarkerData" />
-    <ImageSwiper :options="photoData" v-model="currentIndex"  />
+    <AddEditMarker
+      ref="addEditMarkerRef"
+      @add-marker="addMarkerToData"
+      @update-marker="updateMarkerData"
+    />
+    <ImageSwiper :options="photoData" v-model="currentIndex" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 
-import ImageSwiper from './ImageSwiper.vue';
-import type { MarkersPlugin } from '@photo-sphere-viewer/markers-plugin';
-import { PhotoSphere } from '@/photoSphereClass/index.ts';
-import type { PanoramaClickEvent } from '../photoSphereClass';
-import { photoData } from '@/mock/photoData.ts';
-import AddEditMarker from './AddEditMarker.vue';
-const currentIndex = ref(0)
-const isEditMode = ref(true) // 默认开启编辑模式
-const addEditMarkerRef = ref()
-watch(() => currentIndex.value, (newIndex) => {
-  if (photoViewer) {
-    photoViewer.setPanorama(photoData[newIndex]!.imgUrl)
-    photoViewer.markersPlugin.setMarkers(photoData[newIndex]!.markerList)
+import ImageSwiper from "./ImageSwiper.vue";
+import type { MarkersPlugin } from "@photo-sphere-viewer/markers-plugin";
+import { PhotoSphere } from "@/photoSphereClass/index.ts";
+import type { PanoramaClickEvent } from "../photoSphereClass";
+import AddEditMarker from "./AddEditMarker.vue";
+const currentIndex = ref(0);
+const isEditMode = ref(true); // 默认开启编辑模式
+const addEditMarkerRef = ref();
+const photoData = ref<any[]>([]);
+
+watch(
+  () => currentIndex.value,
+  (newIndex) => {
+    if (photoViewer && photoData.value.length > 0) {
+      photoViewer.setPanorama(photoData.value[newIndex]!.imgUrl);
+      photoViewer.markersPlugin.setMarkers(
+        photoData.value[newIndex]!.markerList
+      );
+    }
   }
-})
+);
 
-const viewerRef = ref<HTMLDivElement | null>(null)
-let photoViewer: PhotoSphere | null = null
-let markersPlugin: MarkersPlugin | null = null
-onMounted(() => {
-  if (!viewerRef.value) return
+const getPhotoData = async () => {
+  try {
+    const response = await fetch("/data.json");
+    const data = await response.json();
+    photoData.value = data;
+  } catch (error) {
+    console.error("加载数据失败:", error);
+  }
+};
 
-  photoViewer = new PhotoSphere(viewerRef.value)
-  photoViewer.setPanorama(photoData[currentIndex.value]!.imgUrl)
-  photoViewer.markersPlugin.setMarkers(photoData[currentIndex.value]!.markerList)
+const viewerRef = ref<HTMLDivElement | null>(null);
+let photoViewer: PhotoSphere | null = null;
+let markersPlugin: MarkersPlugin | null = null;
+onMounted(async () => {
+  await getPhotoData();
+
+  if (!viewerRef.value || photoData.value.length === 0) return;
+
+  photoViewer = new PhotoSphere(viewerRef.value);
+  photoViewer.setPanorama(photoData.value[currentIndex.value]!.imgUrl);
+  photoViewer.markersPlugin.setMarkers(
+    photoData.value[currentIndex.value]!.markerList
+  );
   photoViewer.addClickListener((e: PanoramaClickEvent) => {
-    console.log('全景图点击事件:', e);
+    console.log("全景图点击事件:", e);
     if (isEditMode.value) {
       // 打开新增点位弹窗
-      addEditMarkerRef.value?.openAddMarker(e.yaw, e.pitch)
+      addEditMarkerRef.value?.openAddMarker(e.yaw, e.pitch);
     }
-  })
-  photoViewer.onMarkerClick((marker: any) =>{
-    console.log('点位被点击:', marker);
+  });
+  photoViewer.onMarkerClick((marker: any) => {
+    console.log("点位被点击:", marker);
     if (isEditMode.value) {
       // 打开编辑点位弹窗
-      addEditMarkerRef.value?.openEditMarker(marker)
+      addEditMarkerRef.value?.openEditMarker(marker);
     }
-  })
-})
+  });
+});
 // 新增点位到数据中
 function addMarkerToData(markerData: any) {
-  console.log('新增点位:', markerData)
+  console.log("新增点位:", markerData);
   const marker = {
     id: markerData.id,
-    position: { 
-      yaw: markerData.yaw, 
-      pitch: markerData.pitch 
+    position: {
+      yaw: markerData.yaw,
+      pitch: markerData.pitch,
     },
     html: `<div class="hotspot-with-arrow">
   <div class="hotspot-text">景点名称</div>
   <div class="arrow-down"></div>
 </div>`,
-    size: { 
-      width: 120,  // 匹配容器宽度,包含所有元素
-      height: 80   // 匹配容器高度,包含文字+箭头+波纹
-    },
-    description: markerData.description
-  }
-  
+    // size: {
+    //   width: 120,  // 匹配容器宽度,包含所有元素
+    //   height: 80   // 匹配容器高度,包含文字+箭头+波纹
+    // },
+    description: markerData.description,
+  };
+
   // 添加到当前场景的markerList
-  photoData[currentIndex.value]!.markerList.push(marker)
-  
+  photoData.value[currentIndex.value]!.markerList.push(marker);
+
   // 更新全景图上的标记点
   if (photoViewer) {
-    photoViewer.markersPlugin.addMarker(marker)
+    photoViewer.markersPlugin.addMarker(marker);
   }
 }
 
 // 更新点位数据
 function updateMarkerData(markerData: any) {
-  console.log('更新点位:', markerData)
-  const markerList = photoData[currentIndex.value]!.markerList
-  const index = markerList.findIndex((m: any) => m.id === markerData.id)
-  
+  console.log("更新点位:", markerData);
+  const markerList = photoData.value[currentIndex.value]!.markerList;
+  const index = markerList.findIndex((m: any) => m.id === markerData.id);
+
   if (index !== -1) {
     const updatedMarker = {
       id: markerData.id,
-      position: { 
-        yaw: markerData.yaw, 
-        pitch: markerData.pitch 
+      position: {
+        yaw: markerData.yaw,
+        pitch: markerData.pitch,
       },
-      html: `<div class="hotspot">${markerData.label || '标记点'}</div>`,
-      size: { 
-        width: markerData.width, 
-        height: markerData.height 
-      },
-      description: markerData.description
-    }
-    
+      html: `<div class="hotspot">${markerData.label || "标记点"}</div>`,
+      // size: {
+      //   width: markerData.width,
+      //   height: markerData.height
+      // },
+      description: markerData.description,
+    };
+
     // 更新数据
-    markerList[index] = updatedMarker
-    
+    markerList[index] = updatedMarker;
+
     // 更新全景图上的标记点
     if (photoViewer) {
-      photoViewer.markersPlugin.updateMarker(updatedMarker)
+      photoViewer.markersPlugin.updateMarker(updatedMarker);
     }
   }
 }
 
 onBeforeUnmount(() => {
-  photoViewer?.destroy()
-})
+  photoViewer?.destroy();
+});
 </script>
 
 <style lang="scss" scoped>
@@ -183,5 +207,4 @@ onBeforeUnmount(() => {
 .add-marker-btn:active {
   transform: translateY(0);
 }
-
 </style>
