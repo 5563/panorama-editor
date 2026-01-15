@@ -2,10 +2,20 @@ import { Viewer } from "@photo-sphere-viewer/core";
 import "@photo-sphere-viewer/core/index.css";
 import "@photo-sphere-viewer/markers-plugin/index.css";
 import { MarkersPlugin } from "@photo-sphere-viewer/markers-plugin";
+import { styleEnum } from "./dict";
 export type PanoramaClickEvent = {
   yaw: number;
   pitch: number;
 };
+export interface ApiMarkersType  {
+  id: string;
+  position: {
+    yaw: number;
+    pitch: number;
+  };
+  text: string;
+  style: string;
+}
 export class PhotoSphere {
   viewer: Viewer;
   markersPlugin: MarkersPlugin;
@@ -28,8 +38,31 @@ export class PhotoSphere {
     return this.viewer.setPanorama(url);
   }
 
-  clearHotspots() {
+  clearMarkers() {
     this.markersPlugin.clearMarkers();
+  }
+  addMarker(marker: ApiMarkersType) {
+    this.markersPlugin.addMarker({
+      id: marker.id,
+      position: {
+        yaw: marker.position.yaw,
+        pitch: marker.position.pitch,
+      },
+      html: styleEnum(marker.text)[marker.style]?.html,
+    });
+  }
+  setMarkers(markers: ApiMarkersType[]) {
+    const newMarkers = markers.map((item) => {
+      return {
+        id: item.id,
+        position: {
+          yaw: item.position.yaw,
+          pitch: item.position.pitch,
+        },
+        html: styleEnum(item.text)[item.style]?.html,
+      }
+    })
+    this.markersPlugin.setMarkers(newMarkers);
   }
 
   destroy() {

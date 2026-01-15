@@ -13,31 +13,78 @@
         </div>
 
         <div class="drawer-content">
-          <div class="form-group">
-            <label>点位ID</label>
-            <input v-model="formData.id" type="text" placeholder="请输入点位ID" :disabled="isEditMode" />
-          </div>
+          <el-form
+            ref="formRef"
+            :model="formData"
+            label-position="top"
+            class="marker-form"
+          >
+            <el-form-item label="点位ID">
+              <el-input
+                v-model="formData.id"
+                placeholder="请输入点位ID"
+                :disabled="isEditMode"
+                clearable
+              />
+            </el-form-item>
 
-          <div class="form-group">
-            <label>Yaw角度</label>
-            <div class="input-with-slider">
-              <input v-model.number="formData.yaw" type="number" placeholder="0 ~ 2π" />
-              <input v-model.number="formData.yaw" type="range" min="0" max="6.28" step="0.001" />
-              <span class="value">{{ formData.yaw.toFixed(2) }}</span>
-            </div>
-          </div>
+            <el-form-item label="Yaw角度">
+              <div class="input-with-slider">
+                <el-input-number
+                  v-model="formData.yaw"
+                  :min="0"
+                  :max="6.28"
+                  :step="0.001"
+                  :precision="3"
+                  placeholder="0 ~ 2π"
+                  controls-position="right"
+                  class="slider-input"
+                />
+                <el-slider
+                  v-model="formData.yaw"
+                  :min="0"
+                  :max="6.28"
+                  :step="0.001"
+                  :show-tooltip="true"
+                  :format-tooltip="formatYawTooltip"
+                  class="slider"
+                />
+                <span class="value">{{ formData.yaw.toFixed(3) }}</span>
+              </div>
+            </el-form-item>
 
-          <div class="form-group">
-            <label>Pitch角度</label>
-            <div class="input-with-slider">
-              <input v-model.number="formData.pitch" type="number" placeholder="-π/2 ~ π/2" />
-              <input v-model.number="formData.pitch" type="range" min="-1.57" max="1.57" step="0.001" />
-              <span class="value">{{ formData.pitch.toFixed(2) }}</span>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>样式</label>
-             <el-select v-model="formData.style" placeholder="请选择样式" style="width: 240px">
+            <el-form-item label="Pitch角度">
+              <div class="input-with-slider">
+                <el-input-number
+                  v-model="formData.pitch"
+                  :min="-1.57"
+                  :max="1.57"
+                  :step="0.001"
+                  :precision="3"
+                  placeholder="-π/2 ~ π/2"
+                  controls-position="right"
+                  class="slider-input"
+                />
+                <el-slider
+                  v-model="formData.pitch"
+                  :min="-1.57"
+                  :max="1.57"
+                  :step="0.001"
+                  :show-tooltip="true"
+                  :format-tooltip="formatPitchTooltip"
+                  class="slider"
+                />
+                <span class="value">{{ formData.pitch.toFixed(3) }}</span>
+              </div>
+            </el-form-item>
+
+            <el-form-item label="样式">
+              <el-select
+                v-model="formData.style"
+                placeholder="请选择样式"
+                style="width: 100%"
+                clearable
+              >
                 <el-option
                   v-for="item in styleEnum()"
                   :key="item.value"
@@ -45,22 +92,33 @@
                   :value="item.value"
                 />
               </el-select>
-          </div>
+            </el-form-item>
 
-          <div class="form-group">
-            <label>标签内容</label>
-            <input v-model="formData.label" type="text" placeholder="请输入标签内容，如：景点1、标记点等" />
-          </div>
+            <el-form-item label="标签内容">
+              <el-input
+                v-model="formData.label"
+                placeholder="请输入标签内容，如：景点1、标记点等"
+                clearable
+              />
+            </el-form-item>
 
-          <div class="form-group">
-            <label>描述信息</label>
-            <textarea v-model="formData.description" placeholder="请输入描述信息"></textarea>
-          </div>
+            <el-form-item label="描述信息">
+              <el-input
+                v-model="formData.description"
+                type="textarea"
+                placeholder="请输入描述信息"
+                :rows="4"
+                clearable
+              />
+            </el-form-item>
+          </el-form>
         </div>
 
         <div class="drawer-footer">
-          <button class="btn btn-cancel" @click="closeDrawer">取消</button>
-          <button class="btn btn-primary" @click="saveMarker">{{ isEditMode ? '更新' : '新增' }}</button>
+          <el-button class="btn-cancel" @click="closeDrawer">取消</el-button>
+          <el-button type="primary" @click="saveMarker">
+            {{ isEditMode ? '更新' : '新增' }}
+          </el-button>
         </div>
       </div>
     </transition>
@@ -68,8 +126,9 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
+import type { FormInstance } from 'element-plus'
+import { ElMessage, ElButton, ElInput, ElInputNumber, ElSlider, ElForm, ElFormItem, ElSelect, ElOption } from 'element-plus'
 import { styleEnum } from '@/photoSphereClass/dict'
-import { ElSelect, ElOption } from 'element-plus'
 
 interface MarkerData {
   id: string
@@ -80,6 +139,7 @@ interface MarkerData {
   style: string
 }
 
+const formRef = ref<FormInstance>()
 const isOpen = ref(true)
 const isEditMode = ref(false)
 const formData = reactive<MarkerData>({
@@ -90,6 +150,16 @@ const formData = reactive<MarkerData>({
   description: '',
   style: '',
 })
+
+// 格式化 Yaw tooltip
+const formatYawTooltip = (value: number) => {
+  return value.toFixed(3) + ' rad'
+}
+
+// 格式化 Pitch tooltip
+const formatPitchTooltip = (value: number) => {
+  return value.toFixed(3) + ' rad'
+}
 
 // 暴露给父组件的方法
 const openAddMarker = (yaw: number, pitch: number) => {
@@ -108,6 +178,7 @@ const openEditMarker = (marker: any) => {
   formData.pitch = marker.position.pitch
   formData.label = marker.label || ''
   formData.description = marker.description || ''
+  formData.style = marker.style || ''
   isOpen.value = true
 }
 
@@ -121,25 +192,29 @@ const resetForm = () => {
   formData.pitch = 0
   formData.label = ''
   formData.description = ''
+  formData.style = ''
+  formRef.value?.clearValidate()
 }
 
 const emit = defineEmits(['addMarker', 'updateMarker'])
 
-const saveMarker = () => {
+const saveMarker = async () => {
   // 验证表单
   if (!formData.id.trim()) {
-    alert('请输入点位ID')
+    ElMessage.warning('请输入点位ID')
     return
   }
-  
+
   if (isEditMode.value) {
     // 编辑模式,触发更新事件
     emit('updateMarker', { ...formData })
+    ElMessage.success('点位更新成功')
   } else {
     // 新增模式,触发新增事件
     emit('addMarker', { ...formData })
+    ElMessage.success('点位添加成功')
   }
-  
+
   closeDrawer()
 }
 
@@ -205,48 +280,21 @@ defineExpose({
   height: 0;
 }
 
-.form-group {
-  margin-bottom: 20px;
-  display: flex;
-  flex-direction: column;
+.marker-form {
+  width: 100%;
 }
 
-.form-group label {
+/* Element Plus Form Item 样式覆盖 */
+.marker-form :deep(.el-form-item) {
+  margin-bottom: 20px;
+}
+
+.marker-form :deep(.el-form-item__label) {
   font-size: 14px;
   font-weight: 500;
   color: #262626;
-  margin-bottom: 8px;
-}
-
-.form-group input[type="text"],
-.form-group input[type="number"],
-.form-group textarea {
-  padding: 8px 12px;
-  border: 1px solid #d9d9d9;
-  border-radius: 4px;
-  font-size: 14px;
-  font-family: inherit;
-  transition: all 0.2s ease;
-}
-
-.form-group input[type="text"]:focus,
-.form-group input[type="number"]:focus,
-.form-group textarea:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
-}
-
-.form-group input[type="text"]:disabled {
-  background-color: #f5f5f5;
-  color: #8c8c8c;
-  cursor: not-allowed;
-}
-
-.form-group textarea {
-  resize: vertical;
-  min-height: 80px;
-  font-family: inherit;
+  line-height: 1.5;
+  padding-bottom: 8px;
 }
 
 /* 带滑块的输入 */
@@ -254,56 +302,19 @@ defineExpose({
   display: flex;
   gap: 12px;
   align-items: center;
+  width: 100%;
 }
 
-.input-with-slider input[type="number"] {
-  width: 80px;
+.input-with-slider .slider-input {
+  width: 120px;
 }
 
-.input-with-slider input[type="range"] {
+.input-with-slider .slider {
   flex: 1;
-  cursor: pointer;
-  height: 4px;
-  -webkit-appearance: none;
-  appearance: none;
-  background: #f0f0f0;
-  border-radius: 2px;
-  outline: none;
-}
-
-.input-with-slider input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #667eea;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.input-with-slider input[type="range"]::-webkit-slider-thumb:hover {
-  background: #764ba2;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
-}
-
-.input-with-slider input[type="range"]::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #667eea;
-  cursor: pointer;
-  border: none;
-  transition: all 0.2s ease;
-}
-
-.input-with-slider input[type="range"]::-moz-range-thumb:hover {
-  background: #764ba2;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
 }
 
 .input-with-slider .value {
-  min-width: 50px;
+  min-width: 60px;
   text-align: right;
   font-size: 14px;
   color: #8c8c8c;
@@ -319,44 +330,8 @@ defineExpose({
   flex-shrink: 0;
 }
 
-.btn {
+.drawer-footer .el-button {
   flex: 1;
-  padding: 10px 24px;
-  border: none;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-align: center;
-}
-
-.btn-cancel {
-  background-color: #f5f5f5;
-  color: #262626;
-}
-
-.btn-cancel:hover {
-  background-color: #e6e6e6;
-}
-
-.btn-cancel:active {
-  background-color: #d9d9d9;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-}
-
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
-
-.btn-primary:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
 }
 
 /* 动画 */
@@ -368,7 +343,6 @@ defineExpose({
 .drawer-enter-from,
 .drawer-leave-to {
   opacity: 0;
-  /* transform: translateX(100%); */
   width: 0;
 }
 </style>

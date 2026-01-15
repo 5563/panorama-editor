@@ -19,7 +19,8 @@
           "yaw": 1.360266574458258,
           "pitch": -0.5846813973963054
         },
-        "html": "<div class=\"hotspot-with-arrow\"><div class=\"hotspot-text\">景点名称</div><div class=\"arrow-down\"></div></div>"
+        "text": "景点名称2",
+        "style": "style1"
       }
     ]
   },

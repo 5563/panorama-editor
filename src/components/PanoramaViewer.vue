@@ -28,15 +28,18 @@ const photoData = ref<any[]>([]);
 
 watch(
   () => currentIndex.value,
-  (newIndex) => {
-    if (photoViewer && photoData.value.length > 0) {
-      photoViewer.setPanorama(photoData.value[newIndex]!.imgUrl);
-      photoViewer.markersPlugin.setMarkers(
-        photoData.value[newIndex]!.markerList
-      );
-    }
+  () => {
+    setPhotoData()
   }
 );
+const setPhotoData = () =>{
+  if (photoViewer && photoData.value.length > 0) {
+      photoViewer.setPanorama(photoData.value[currentIndex.value]!.imgUrl);
+      photoViewer.setMarkers(
+        photoData.value[currentIndex.value]!.markerList
+      );
+    }
+}
 
 const getPhotoData = async () => {
   try {
@@ -50,14 +53,14 @@ const getPhotoData = async () => {
 
 const viewerRef = ref<HTMLDivElement | null>(null);
 let photoViewer: PhotoSphere | null = null;
-let markersPlugin: MarkersPlugin | null = null;
 const tempMarker = {
   id: "tempMarkerID",
   position: {
     yaw: 0,
     pitch: 0,
   },
-  html: '<div class="hotspot"></div>',
+  text: '',
+  style: 'style2',
 };
 onMounted(async () => {
   await getPhotoData();
@@ -65,10 +68,7 @@ onMounted(async () => {
   if (!viewerRef.value || photoData.value.length === 0) return;
 
   photoViewer = new PhotoSphere(viewerRef.value);
-  photoViewer.setPanorama(photoData.value[currentIndex.value]!.imgUrl);
-  photoViewer.markersPlugin.setMarkers(
-    photoData.value[currentIndex.value]!.markerList
-  );
+  setPhotoData()
   photoViewer.addClickListener((e: PanoramaClickEvent) => {
     console.log("全景图点击事件:", e);
     if (isEditMode.value) {
@@ -83,8 +83,8 @@ onMounted(async () => {
 
       tempMarker.position.yaw = e.yaw;
       tempMarker.position.pitch = e.pitch;
-      photoViewer?.markersPlugin.addMarker(tempMarker);
-      addEditMarkerRef.value?.openAddMarker(e.yaw, e.pitch);
+      photoViewer?.addMarker(tempMarker);
+      addEditMarkerRef.value?.openAddMarker(tempMarker);
     }
   });
   photoViewer.onMarkerClick((marker: any) => {
