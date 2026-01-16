@@ -8,6 +8,8 @@
       ref="addEditMarkerRef"
       @add-marker="addMarkerToData"
       @update-marker="updateMarkerData"
+      v-model="tempMarker"
+      v-model:editStatus="editStatus"
     />
     <ImageSwiper :options="photoData" v-model="currentIndex" />
   </div>
@@ -17,29 +19,27 @@
 import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 
 import ImageSwiper from "./ImageSwiper.vue";
-import type { MarkersPlugin } from "@photo-sphere-viewer/markers-plugin";
 import { PhotoSphere } from "@/photoSphereClass/index.ts";
-import type { PanoramaClickEvent } from "../photoSphereClass";
+import type { ApiMarkersType, PanoramaClickEvent } from "../photoSphereClass";
 import AddEditMarker from "./AddEditMarker.vue";
+import { editStatusEnum } from "@/photoSphereClass/dict";
 const currentIndex = ref(0);
-const isEditMode = ref(true); // 默认开启编辑模式
 const addEditMarkerRef = ref();
 const photoData = ref<any[]>([]);
+const editStatus = ref(editStatusEnum.blank)
 
 watch(
   () => currentIndex.value,
   () => {
-    setPhotoData()
+    setPhotoData();
   }
 );
-const setPhotoData = () =>{
+const setPhotoData = () => {
   if (photoViewer && photoData.value.length > 0) {
-      photoViewer.setPanorama(photoData.value[currentIndex.value]!.imgUrl);
-      photoViewer.setMarkers(
-        photoData.value[currentIndex.value]!.markerList
-      );
-    }
-}
+    photoViewer.setPanorama(photoData.value[currentIndex.value]!.imgUrl);
+    photoViewer.setMarkers(photoData.value[currentIndex.value]!.markerList);
+  }
+};
 
 const getPhotoData = async () => {
   try {
@@ -53,46 +53,38 @@ const getPhotoData = async () => {
 
 const viewerRef = ref<HTMLDivElement | null>(null);
 let photoViewer: PhotoSphere | null = null;
-const tempMarker = {
+const tempMarker = ref<ApiMarkersType>({
   id: "tempMarkerID",
   position: {
     yaw: 0,
     pitch: 0,
   },
-  text: '',
-  style: 'style2',
-};
+  text: "",
+  style: "style2",
+});
 onMounted(async () => {
   await getPhotoData();
 
   if (!viewerRef.value || photoData.value.length === 0) return;
 
   photoViewer = new PhotoSphere(viewerRef.value);
-  setPhotoData()
+  setPhotoData();
   photoViewer.addClickListener((e: PanoramaClickEvent) => {
-    console.log("全景图点击事件:", e);
-    if (isEditMode.value) {
-      // 打开新增点位弹窗
-        const markers = photoViewer?.markersPlugin?.getMarkers() || [];
+    const markers = photoViewer?.markersPlugin?.getMarkers() || [];
 
-      const exists = markers.some(m => m.id === tempMarker.id);
+    const exists = markers.some((m) => m.id === tempMarker.value.id);
 
-      if (exists) {
-        photoViewer?.markersPlugin.removeMarker(tempMarker.id);
-      }
-
-      tempMarker.position.yaw = e.yaw;
-      tempMarker.position.pitch = e.pitch;
-      photoViewer?.addMarker(tempMarker);
-      addEditMarkerRef.value?.openAddMarker(tempMarker);
+    if (exists) {
+      photoViewer?.markersPlugin.removeMarker(tempMarker.value.id);
     }
+
+    tempMarker.value.position.yaw = e.yaw;
+    tempMarker.value.position.pitch = e.pitch;
+    photoViewer?.addMarker(tempMarker.value);
+    addEditMarkerRef.value?.openAddMarker();
   });
   photoViewer.onMarkerClick((marker: any) => {
-    console.log("点位被点击:", marker);
-    if (isEditMode.value) {
-      // 打开编辑点位弹窗
-      addEditMarkerRef.value?.openEditMarker(marker);
-    }
+    addEditMarkerRef.value?.openEditMarker(marker);
   });
 });
 // 新增点位到数据中

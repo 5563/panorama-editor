@@ -22,3 +22,8 @@ export const styleEnum = (text?: string): StyleEnum => {
     }as const;
 } 
 
+export const editStatusEnum  = {
+    edit: 'edit',
+    add: 'add',
+    blank: 'blank'
+}

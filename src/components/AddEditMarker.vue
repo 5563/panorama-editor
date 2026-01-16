@@ -1,9 +1,9 @@
 <template>
   <!-- Drawer -->
   <transition name="drawer">
-    <div v-if="isOpen" class="drawer">
+    <div class="drawer">
         <div class="drawer-header">
-          <h3 class="drawer-title">{{ isEditMode ? '编辑点位' : '新增点位' }}</h3>
+          <h3 class="drawer-title">{{ editStatus === editStatusEnum.edit ? '更新' : '新增' }}</h3>
           <button class="close-btn" @click="closeDrawer">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -19,19 +19,19 @@
             label-position="top"
             class="marker-form"
           >
-            <el-form-item label="点位ID">
+            <!-- <el-form-item label="点位ID">
               <el-input
                 v-model="formData.id"
                 placeholder="请输入点位ID"
-                :disabled="isEditMode"
+                :disabled="editStatus === editStatusEnum.edit"
                 clearable
               />
-            </el-form-item>
+            </el-form-item> -->
 
             <el-form-item label="Yaw角度">
               <div class="input-with-slider">
                 <el-input-number
-                  v-model="formData.yaw"
+                  v-model="formData.position.yaw"
                   :min="0"
                   :max="6.28"
                   :step="0.001"
@@ -41,7 +41,7 @@
                   class="slider-input"
                 />
                 <el-slider
-                  v-model="formData.yaw"
+                  v-model="formData.position.yaw"
                   :min="0"
                   :max="6.28"
                   :step="0.001"
@@ -49,14 +49,14 @@
                   :format-tooltip="formatYawTooltip"
                   class="slider"
                 />
-                <span class="value">{{ formData.yaw.toFixed(3) }}</span>
+                <span class="value">{{ formData.position.yaw.toFixed(3) }}</span>
               </div>
             </el-form-item>
 
             <el-form-item label="Pitch角度">
               <div class="input-with-slider">
                 <el-input-number
-                  v-model="formData.pitch"
+                  v-model="formData.position.pitch"
                   :min="-1.57"
                   :max="1.57"
                   :step="0.001"
@@ -66,7 +66,7 @@
                   class="slider-input"
                 />
                 <el-slider
-                  v-model="formData.pitch"
+                  v-model="formData.position.pitch"
                   :min="-1.57"
                   :max="1.57"
                   :step="0.001"
@@ -74,7 +74,7 @@
                   :format-tooltip="formatPitchTooltip"
                   class="slider"
                 />
-                <span class="value">{{ formData.pitch.toFixed(3) }}</span>
+                <span class="value">{{ formData.position.pitch.toFixed(3) }}</span>
               </div>
             </el-form-item>
 
@@ -96,18 +96,8 @@
 
             <el-form-item label="标签内容">
               <el-input
-                v-model="formData.label"
+                v-model="formData.text"
                 placeholder="请输入标签内容，如：景点1、标记点等"
-                clearable
-              />
-            </el-form-item>
-
-            <el-form-item label="描述信息">
-              <el-input
-                v-model="formData.description"
-                type="textarea"
-                placeholder="请输入描述信息"
-                :rows="4"
                 clearable
               />
             </el-form-item>
@@ -117,7 +107,7 @@
         <div class="drawer-footer">
           <el-button class="btn-cancel" @click="closeDrawer">取消</el-button>
           <el-button type="primary" @click="saveMarker">
-            {{ isEditMode ? '更新' : '新增' }}
+            {{ editStatus === editStatusEnum.edit ? '更新' : '新增' }}
           </el-button>
         </div>
       </div>
@@ -128,7 +118,8 @@
 import { ref, reactive } from 'vue'
 import type { FormInstance } from 'element-plus'
 import { ElMessage, ElButton, ElInput, ElInputNumber, ElSlider, ElForm, ElFormItem, ElSelect, ElOption } from 'element-plus'
-import { styleEnum } from '@/photoSphereClass/dict'
+import { editStatusEnum, styleEnum } from '@/photoSphereClass/dict'
+import type { ApiMarkersType } from '@/photoSphereClass'
 
 interface MarkerData {
   id: string
@@ -141,15 +132,9 @@ interface MarkerData {
 
 const formRef = ref<FormInstance>()
 const isOpen = ref(true)
-const isEditMode = ref(false)
-const formData = reactive<MarkerData>({
-  id: '',
-  yaw: 0,
-  pitch: 0,
-  label: '',
-  description: '',
-  style: '',
-})
+const editStatus = de
+const formData = defineModel<ApiMarkersType>({required: true})
+
 
 // 格式化 Yaw tooltip
 const formatYawTooltip = (value: number) => {
@@ -162,58 +147,21 @@ const formatPitchTooltip = (value: number) => {
 }
 
 // 暴露给父组件的方法
-const openAddMarker = (yaw: number, pitch: number) => {
-  isEditMode.value = false
-  resetForm()
-  // 设置点击位置的yaw和pitch
-  formData.yaw = yaw
-  formData.pitch = pitch
-  isOpen.value = true
+const openAddMarker = () => {
+  editStatus.value = editStatusEnum.add
 }
 
-const openEditMarker = (marker: any) => {
-  isEditMode.value = true
-  formData.id = marker.id
-  formData.yaw = marker.position.yaw
-  formData.pitch = marker.position.pitch
-  formData.label = marker.label || ''
-  formData.description = marker.description || ''
-  formData.style = marker.style || ''
-  isOpen.value = true
+const openEditMarker = () => {
+  editStatus.value = editStatusEnum.edit
 }
 
 const closeDrawer = () => {
   isOpen.value = false
 }
 
-const resetForm = () => {
-  formData.id = `marker_${Date.now()}`
-  formData.yaw = 0
-  formData.pitch = 0
-  formData.label = ''
-  formData.description = ''
-  formData.style = ''
-  formRef.value?.clearValidate()
-}
-
 const emit = defineEmits(['addMarker', 'updateMarker'])
 
 const saveMarker = async () => {
-  // 验证表单
-  if (!formData.id.trim()) {
-    ElMessage.warning('请输入点位ID')
-    return
-  }
-
-  if (isEditMode.value) {
-    // 编辑模式,触发更新事件
-    emit('updateMarker', { ...formData })
-    ElMessage.success('点位更新成功')
-  } else {
-    // 新增模式,触发新增事件
-    emit('addMarker', { ...formData })
-    ElMessage.success('点位添加成功')
-  }
 
   closeDrawer()
 }
